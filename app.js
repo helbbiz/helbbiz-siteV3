@@ -33,10 +33,18 @@ if (isPublicDomain) {
 const dialog = document.querySelector('#clip-dialog');
 const clipPlayer = document.querySelector('#clip-player');
 const openClip = document.querySelector('#open-clip');
+const clipFallback = document.querySelector('#clip-fallback');
 document.querySelectorAll('.clip[data-clip]').forEach(clip => clip.addEventListener('click', () => {
   const id = clip.dataset.clip;
   openClip.href = `https://www.twitch.tv/helbbiz/clip/${id}`;
-  if (!isPublicDomain) { window.open(openClip.href, '_blank', 'noopener'); return; }
+  if (!isPublicDomain) {
+    clipPlayer.hidden = true;
+    clipFallback.hidden = false;
+    dialog.showModal();
+    return;
+  }
+  clipPlayer.hidden = false;
+  clipFallback.hidden = true;
   clipPlayer.src = `https://clips.twitch.tv/embed?clip=${encodeURIComponent(id)}&parent=${encodeURIComponent(parent)}&autoplay=true`;
   dialog.showModal();
 }));
@@ -52,4 +60,22 @@ if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     hole.style.marginTop = `${y}px`;
   }, { passive: true });
 }
+
+// Keep the objects around the black hole moving even when the operating system
+// requests reduced motion (the rest of the site still respects that setting).
+const flybyPaths = [
+  ['translate3d(42vw,-18vh,0) rotate(20deg)', 'translate3d(-43vw,48vh,0) rotate(20deg)', 7600],
+  ['translate3d(29vw,37vh,0) rotate(145deg)', 'translate3d(-48vw,-34vh,0) rotate(145deg)', 10500],
+  ['translate3d(45vw,22vh,0) rotate(-32deg)', 'translate3d(-43vw,-45vh,0) rotate(-32deg)', 8800],
+  ['translate3d(37vw,-8vh,0) rotate(28deg)', 'translate3d(-50vw,55vh,0) rotate(28deg)', 11600],
+  ['translate3d(34vw,38vh,0) rotate(152deg)', 'translate3d(-46vw,-26vh,0) rotate(152deg)', 9500],
+  ['translate3d(49vw,15vh,0) rotate(-27deg)', 'translate3d(-43vw,-52vh,0) rotate(-27deg)', 13200]
+];
+document.querySelectorAll('.comet').forEach((comet, index) => {
+  const [start, end, duration] = flybyPaths[index];
+  comet.animate([{ transform: start, opacity: 0 }, { transform: start, opacity: 1, offset: .13 }, { transform: end, opacity: 1, offset: .8 }, { transform: end, opacity: 0 }], { duration, delay: -index * 1400, iterations: Infinity, easing: 'linear' });
+});
+document.querySelectorAll('.rock').forEach((rock, index) => {
+  rock.animate([{ transform: 'translate3d(0,0,0) rotate(0deg)' }, { transform: `translate3d(${-110 - index * 30}px,${55 + index * 36}px,0) rotate(${270 + index * 80}deg)` }, { transform: 'translate3d(0,0,0) rotate(540deg)' }], { duration: 5800 + index * 1200, delay: -index * 900, iterations: Infinity, easing: 'ease-in-out' });
+});
 
