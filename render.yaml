@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: helbbiz-twitch-site
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: .
+
